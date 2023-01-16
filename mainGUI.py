@@ -132,15 +132,10 @@ class GUI():
     def setNewPos(self):
         _fileNum = self.filenameList.curselection()[0]
         _carNum = self.carNumberList.curselection()[0]
-
-        print(_fileNum)
-        print(self.log.__contains__(_fileNum))
-
         # get pos from log
         if self.log.__contains__(_fileNum):
             # get car Number (keys) of Image
             NumOfKeys = len(self.log.keys())
-            print(NumOfKeys)
             while NumOfKeys > self.carNumberList.size():
                 self.BTN_carNumPlus() # add car Number
             if self.log[_fileNum].__contains__(_carNum):
@@ -210,8 +205,6 @@ class GUI():
             os.mkdir(dir)
         with open(logFilePath,"w") as logfile:
             json.dump(_log,logfile)
-
-        print(_log)
 
     def log2cache(self):
         #要施工

@@ -225,7 +225,6 @@ class CV(Config):
 
         # esc键解除当前选择的区域
         elif key == Config.KEY_MAP['ESC'] :
-            print(self.isSelect, self.selectedArea)
             if self.isMove and self.selectedArea >= 0:
                 print("Area %d was Unselected"%self.selectedArea)
                 self.selectedArea = -1
