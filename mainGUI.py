@@ -8,6 +8,7 @@ import json
 import codecs
 import unit.files as f
 import unit.calculateTools as ct
+import time
 
 import hashlib
 
@@ -18,7 +19,6 @@ import hashlib
 class GUI():
     def __init__(self, parameters):
         self.parameters = parameters
-        self.isDemo = True
         self.carNumberSelected = 0
         self.initGUI()
 
@@ -61,8 +61,8 @@ class GUI():
         frameCarNumber = tk.Frame(cv_labeling,relief=tk.RAISED)
         frameCarNumber.grid(row=1, column=0,sticky=tk.NW)
         tk.Label(frameCarNumber, text='Car NO.', height=2, anchor=tk.SW).grid(row=0, column=0, sticky=tk.W)
-        tk.Button(frameCarNumber,text='+', width=4,command=self.BTN_carNumPlus).grid(row=0, column=1,sticky=tk.EW)
-        tk.Button(frameCarNumber,text='-', width=4,command=self.BTN_carNumminus).grid(row=0, column=2,sticky=tk.EW)
+        # tk.Button(frameCarNumber,text='+', width=4,command=self.BTN_carNumPlus).grid(row=0, column=1,sticky=tk.EW)
+        # tk.Button(frameCarNumber,text='-', width=4,command=self.BTN_carNumminus).grid(row=0, column=2,sticky=tk.EW)
 
         # F3 areaNumber Label and button
         frameAreaInfoLabel = tk.Frame(cv_labeling,relief=tk.RAISED)
@@ -92,13 +92,21 @@ class GUI():
         self.areaStr = tk.StringVar()
         tk.Label(frameAreaInfo, textvariable=self.areaStr, height=2, anchor=tk.SW).grid(row=1, column=1, sticky=tk.W)
 
+        # CV2 output Module
+        cv_save = tk.Canvas(self.controlPanel)
+        tk.Label(cv_save, text='Save', height=2, anchor=tk.SW).grid(row=0, columnspan=2, sticky=tk.W)
+        # F6 Save
+        frameSave = tk.Frame(cv_save,relief=tk.RAISED)
+        frameSave.grid(row=1, column=0,sticky=tk.NW)
+        tk.Button(frameSave,text='Save CSV', width=8,command=self.save2csv).grid(row=0, column=0,sticky=tk.NW)
+
         # Canvas pack
-        cv_file.pack()
-        cv_labeling.pack()
+        cv_file.pack(anchor=tk.SW)
+        cv_labeling.pack(anchor=tk.SW)
+        cv_save.pack(anchor=tk.SW)
 
         # init data
         self.initParameters()
-        self.initPos()
 
         # Value update
         self.controlPanel.after(Config.GUI_REFRESH_RATE, self.mainUpdate)
@@ -123,43 +131,51 @@ class GUI():
         if self.carNumberList.curselection() != ():
             selected = self.carNumberList.curselection()[0]
             self.carNameStr.set('Car No.%d'%selected)
-            if self.isDemo:
-                self.initAndSetNewPos()
-            else:
-                self.setNewPos()
+            self.setNewPos()
 
     # find pos info in log
     def setNewPos(self):
+        if not len(self.filenameList.curselection()) > 0:
+            return None
+        # if not len(self.carNumberList.curselection()) > 0:
+        #     self.BTN_carNumPlus()
         _fileNum = self.filenameList.curselection()[0]
         _carNum = self.carNumberList.curselection()[0]
         # get pos from log
-        if self.log.__contains__(_fileNum):
-            # get car Number (keys) of Image
-            NumOfKeys = len(self.log.keys())
-            while NumOfKeys > self.carNumberList.size():
-                self.BTN_carNumPlus() # add car Number
-            if self.log[_fileNum].__contains__(_carNum):
-                points = self.log[_fileNum][_carNum]
+        if self.log.__contains__(str(_fileNum)):
+            # # get car Number (keys) of Image
+            # NumOfKeys = len(self.log[str(_fileNum)].keys())
+            # while NumOfKeys > self.carNumberList.size():
+            #     self.BTN_carNumPlus() # add car Number
+            if self.log[str(_fileNum)].__contains__(str(_carNum)):
+                points = self.log[str(_fileNum)][str(_carNum)]
                 # send to OpenCV
                 pos = ct.list2str(points['pos'])
                 self.parameters['pos'].value = bytes(pos, encoding='utf8')
                 self.areaSize = float(points['areaSize'])
-            else :
-                self.initAndSetNewPos()
-        else :
-            self.initAndSetNewPos()
-
-    def initAndSetNewPos(self):
-        self.parameters['pos'].value = bytes('', encoding='utf8')
+                print(self.areaSize, pos)
+            else:
+                self.parameters['pos'].value = bytes('', encoding='utf8')
+                self.areaSize = float(0.0)
+        else:
+            self.parameters['pos'].value = bytes('', encoding='utf8')
+            self.areaSize = float(0.0)
 
     def getNewParameters(self):
+        if not len(self.filenameList.curselection()) > 0:
+            return None
+        # if not len(self.carNumberList.curselection()) > 0:
+        #     self.BTN_carNumPlus()
         _pos = str(self.parameters['pos'].value, encoding='utf-8')
         _pos = ct.str2list(_pos)
 
         if self.pos != _pos:
+            print(1)
+            print(_pos)
+            print(ct.getPolyArea(_pos))
             self.areaSize = ct.getPolyArea(_pos)
             self.pos = _pos
-            if not self.isDemo: self.updateLog()
+            self.updateLog()
 
     def checkLogfiles(self):
         # get filepath hashValue(MD5)
@@ -188,10 +204,10 @@ class GUI():
             'areaSize': self.areaSize,
         }
 
-        if not self.log.__contains__(_fileNum):
-            self.log[_fileNum] = {'filename': _filename}
+        if not self.log.__contains__(str(_fileNum)):
+            self.log[str(_fileNum)] = {'filename': _filename}
 
-        self.log[_fileNum][_carNum] = _info
+        self.log[str(_fileNum)][str(_carNum)] = _info
         self.log2file()
 
     def log2file(self):
@@ -211,13 +227,53 @@ class GUI():
         #添加写入cache文件的代码
         pass
 
-    def initPos(self):
-        if self.carNumberList.size() == 0:
-            self.BTN_carNumPlus()
+    # save to csv file
+    def save2csv(self):
+        ImageFilePath = self.filepath.get()
+        logFilePath = os.path.join('output_%d.csv'%int(time.time()))
+        totalCars = self.carNumberList.size()
+        totalFiles = self.filenameList.size()
+        totalPixel = Config.DISPLAY_HEIGHT * Config.DISPLAY_WIDTH
+
+        if totalFiles <= 0: return False
+
+        # write header
+        header = 'filepath,filename,fileNumber,totalSize'
+        for carNum in range(totalCars):
+            header = header + ',Car%d Size,Car%d Per.'%(carNum, carNum)
+        header = header +'\n'
+
+        datas = []
+        # write data
+        for fileNum in range(totalFiles):
+            filename = self.filenames[fileNum]
+            _data = '%s,%s,%d,%d'%(ImageFilePath,filename,fileNum,totalPixel)
+            if self.log.__contains__(str(fileNum)):
+                for carNum in range(totalCars):
+                    if self.log[str(fileNum)].__contains__(str(carNum)):
+                        areaSize = self.log[str(fileNum)][str(carNum)]['areaSize']
+                        _data = _data + ',%d,%f'%(int(areaSize), float(areaSize/totalPixel))
+                    else:
+                        # fileNum havent this carNum
+                        _data = _data + ',0,0'
+            else:
+                # fileNum havent any car
+                _data = _data + ',0,0'*totalCars
+
+            datas.append(_data+'\n')
+
+        with open(logFilePath,"w") as logfile:
+            logfile.writelines(header)
+            logfile.writelines(datas)
 
     def initParameters(self):
         self.pos = str(self.parameters['pos'].value, encoding='utf-8')
         self.areaSize = 0.0
+
+        for n in range(10):
+            self.carNumberList.insert(tk.END,'Car No.%d'%n)
+        self.carNumberList.selection_clear(0,tk.END)
+        self.carNumberList.selection_set(0)
 
     ############################################################
     ##                     Buttom command                     ##
@@ -228,7 +284,6 @@ class GUI():
         filepath = filedialog.askdirectory()
         files = f.getFileName(filepath)
         if len(files) > 0:
-            self.isDemo = False
             self.filenames = files
             self.filepath.set(str(filepath))
             self.label_filepath.configure(bg='#44DD44')
@@ -246,31 +301,30 @@ class GUI():
             self.filenameList.delete(0,tk.END)
             self.filepath.set('NO IMAGE FILE')
             self.label_filepath.configure(bg='#DD2222')
-        
 
     # [list] select image File 
     def filenameOnSelected(self, event):
         self.setDisplayImage()
 
-    # [button] add car number
-    def BTN_carNumPlus(self):
-        self.carNumberList.insert(tk.END,'Car No.%d'%self.carNumberList.size())
-        self.carNumberList.selection_clear(0,tk.END)
-        self.carNumberList.selection_set(tk.END)
-        self.setSelectedCar()
+    # # [button] add car number
+    # def BTN_carNumPlus(self):
+    #     self.carNumberList.insert(tk.END,'Car No.%d'%self.carNumberList.size())
+    #     self.carNumberList.selection_clear(0,tk.END)
+    #     self.carNumberList.selection_set(tk.END)
+    #     self.setSelectedCar()
 
-    # [button] del car number
-    def BTN_carNumminus(self):
-        if self.carNumberList.size() > 0:
-            selected = self.carNumberList.curselection()[0]
-            self.carNumberList.delete(selected)
-            if self.carNumberList.size() > 0:
-                selectedNew = selected - 1 if selected - 1 >= 0 else 0
-                self.carNumberList.selection_clear(0,tk.END)
-                self.carNumberList.selection_set(selectedNew)
-                self.setSelectedCar()
-            else:
-                self.BTN_carNumPlus()
+    # # [button] del car number
+    # def BTN_carNumminus(self):
+    #     if self.carNumberList.size() > 0:
+    #         selected = self.carNumberList.curselection()[0]
+    #         self.carNumberList.delete(selected)
+    #         if self.carNumberList.size() > 0:
+    #             selectedNew = selected - 1 if selected - 1 >= 0 else 0
+    #             self.carNumberList.selection_clear(0,tk.END)
+    #             self.carNumberList.selection_set(selectedNew)
+    #             self.setSelectedCar()
+    #         else:
+    #             self.BTN_carNumPlus()
 
     # [list] select Car Number
     def List_carNumberOnSelected(self, event):

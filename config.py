@@ -3,6 +3,9 @@ class Config(object):
     MOUSE_OVER_Limited = 10 # 区域选择时的容许
     ADD_POINT_Limited = 50 # 新增点的容许
 
+    DISPLAY_WIDTH = 800
+    DISPLAY_HEIGHT = 800
+
     GUI_REFRESH_RATE = 10 # GUIのフレームレート
 
     KEY_MAP = {

@@ -5,6 +5,7 @@ def getPolyArea(points):
     area = 0.0
     try:
         for point in points:
+            if len(point) == 0:continue
             pts = np.array(point)
             x = pts[:, 0]
             y = pts[:, 1]

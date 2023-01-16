@@ -19,8 +19,8 @@ class CV(Config):
         self.parameters = parameters
         self.pos = ''
         
-        self.windowWidth = 800
-        self.windowHeight = 800
+        self.windowWidth = Config.DISPLAY_WIDTH
+        self.windowHeight = Config.DISPLAY_HEIGHT
 
         # 初始化状态
         self.isMove = False # 点移動
