@@ -282,7 +282,6 @@ if __name__ == '__main__':
         'filePath': Array('c', 200), # path
         'fileNum':  Value('i', -1), # path
         'pos':      Array('c', 200), # 点の座標
-        'areaSize': Value('f', 0), # area of car
     }
 
     process_GUI = Process(target=mainGUI.GUI, args=(parameters,))
