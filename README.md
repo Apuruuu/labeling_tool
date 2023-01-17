@@ -18,7 +18,7 @@ OpenCVで画像を開き、その上にエリアを設けて、本ソフトウ�
 
 ## インストール
 
-`pip install -r requirements.txt`
+`pip install opencv-python`
 
 
 
