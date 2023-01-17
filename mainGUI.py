@@ -19,7 +19,7 @@ import hashlib
 class GUI():
     def __init__(self, parameters):
         self.parameters = parameters
-        self.carNumberSelected = 0
+        self.objNumberSelected = 0
         self.initGUI()
 
     def initGUI(self):
@@ -56,38 +56,38 @@ class GUI():
 
         # CV1 File Module
         cv_labeling = tk.Canvas(self.controlPanel)
-        tk.Label(cv_labeling, text='Cars & Areas', height=2, anchor=tk.SW).grid(row=0, columnspan=2, sticky=tk.W)
-        # F2 carNumber Label and button
-        frameCarNumber = tk.Frame(cv_labeling,relief=tk.RAISED)
-        frameCarNumber.grid(row=1, column=0,sticky=tk.NW)
-        tk.Label(frameCarNumber, text='Car NO.', height=2, anchor=tk.SW).grid(row=0, column=0, sticky=tk.W)
-        # tk.Button(frameCarNumber,text='+', width=4,command=self.BTN_carNumPlus).grid(row=0, column=1,sticky=tk.EW)
-        # tk.Button(frameCarNumber,text='-', width=4,command=self.BTN_carNumminus).grid(row=0, column=2,sticky=tk.EW)
+        tk.Label(cv_labeling, text='Objects & Areas', height=2, anchor=tk.SW).grid(row=0, columnspan=2, sticky=tk.W)
+        # F2 objNumber Label and button
+        frameObjNumber = tk.Frame(cv_labeling,relief=tk.RAISED)
+        frameObjNumber.grid(row=1, column=0,sticky=tk.NW)
+        tk.Label(frameObjNumber, text='Object Number', height=2, anchor=tk.SW).grid(row=0, column=0, sticky=tk.W)
+        # tk.Button(frameObjNumber,text='+', width=4,command=self.BTN_objNumPlus).grid(row=0, column=1,sticky=tk.EW)
+        # tk.Button(frameObjNumber,text='-', width=4,command=self.BTN_objNumminus).grid(row=0, column=2,sticky=tk.EW)
 
         # F3 areaNumber Label and button
         frameAreaInfoLabel = tk.Frame(cv_labeling,relief=tk.RAISED)
         frameAreaInfoLabel.grid(row=1, column=1,sticky=tk.NW)
         tk.Label(frameAreaInfoLabel, text='Area Information', height=2, anchor=tk.SW).grid(row=0, column=0, sticky=tk.W)
 
-        # F4 carNumber Listbox
-        frameCarNumberList = tk.Frame(cv_labeling,relief=tk.RAISED)
-        frameCarNumberList.grid(row=2, column=0,sticky=tk.EW)
+        # F4 objNumber Listbox
+        frameObjNumberList = tk.Frame(cv_labeling,relief=tk.RAISED)
+        frameObjNumberList.grid(row=2, column=0,sticky=tk.EW)
         # Scrollbar
-        slb_carNumList = tk.Scrollbar(frameCarNumberList)
-        slb_carNumList.pack(side=tk.RIGHT, fill=tk.Y)
-        # [list] carNumber
-        self.carNumberList = tk.Listbox(frameCarNumberList, yscrollcommand=slb_carNumList.set, width=20, exportselection=False)
-        self.carNumberList.bind('<<ListboxSelect>>', self.List_carNumberOnSelected)
-        self.carNumberList.pack()
-        slb_carNumList.config(command=self.carNumberList.yview)
+        slb_objNumList = tk.Scrollbar(frameObjNumberList)
+        slb_objNumList.pack(side=tk.RIGHT, fill=tk.Y)
+        # [list] objNumber
+        self.objNumberList = tk.Listbox(frameObjNumberList, yscrollcommand=slb_objNumList.set, width=20, exportselection=False)
+        self.objNumberList.bind('<<ListboxSelect>>', self.List_objNumberOnSelected)
+        self.objNumberList.pack()
+        slb_objNumList.config(command=self.objNumberList.yview)
 
         # F5 areaNumber Label and button
         frameAreaInfo = tk.Frame(cv_labeling,relief=tk.RAISED)
         frameAreaInfo.grid(row=2, column=1,sticky=tk.NW)
         # area Info Label
-        tk.Label(frameAreaInfo, text='車両：', height=2, anchor=tk.SW).grid(row=0, column=0, sticky=tk.W)
-        self.carNameStr = tk.StringVar()
-        tk.Label(frameAreaInfo, textvariable=self.carNameStr, height=2, anchor=tk.SW).grid(row=0, column=1, sticky=tk.W)
+        tk.Label(frameAreaInfo, text='Object：', height=2, anchor=tk.SW).grid(row=0, column=0, sticky=tk.W)
+        self.objNameStr = tk.StringVar()
+        tk.Label(frameAreaInfo, textvariable=self.objNameStr, height=2, anchor=tk.SW).grid(row=0, column=1, sticky=tk.W)
         tk.Label(frameAreaInfo, text='面積：', height=2, anchor=tk.SW).grid(row=1, column=0, sticky=tk.W)
         self.areaStr = tk.StringVar()
         tk.Label(frameAreaInfo, textvariable=self.areaStr, height=2, anchor=tk.SW).grid(row=1, column=1, sticky=tk.W)
@@ -127,28 +127,28 @@ class GUI():
             self.parameters['fileNum'].value = selected
             self.setNewPos()
 
-    def setSelectedCar(self):
-        if self.carNumberList.curselection() != ():
-            selected = self.carNumberList.curselection()[0]
-            self.carNameStr.set('Car No.%d'%selected)
+    def setSelectedObj(self):
+        if self.objNumberList.curselection() != ():
+            selected = self.objNumberList.curselection()[0]
+            self.objNameStr.set('Obj No.%d'%selected)
             self.setNewPos()
 
     # find pos info in log
     def setNewPos(self):
         if not len(self.filenameList.curselection()) > 0:
             return None
-        # if not len(self.carNumberList.curselection()) > 0:
-        #     self.BTN_carNumPlus()
+        # if not len(self.objNumberList.curselection()) > 0:
+        #     self.BTN_objNumPlus()
         _fileNum = self.filenameList.curselection()[0]
-        _carNum = self.carNumberList.curselection()[0]
+        _objNum = self.objNumberList.curselection()[0]
         # get pos from log
         if self.log.__contains__(str(_fileNum)):
-            # # get car Number (keys) of Image
+            # # get obj Number (keys) of Image
             # NumOfKeys = len(self.log[str(_fileNum)].keys())
-            # while NumOfKeys > self.carNumberList.size():
-            #     self.BTN_carNumPlus() # add car Number
-            if self.log[str(_fileNum)].__contains__(str(_carNum)):
-                points = self.log[str(_fileNum)][str(_carNum)]
+            # while NumOfKeys > self.objNumberList.size():
+            #     self.BTN_objNumPlus() # add obj Number
+            if self.log[str(_fileNum)].__contains__(str(_objNum)):
+                points = self.log[str(_fileNum)][str(_objNum)]
                 # send to OpenCV
                 pos = ct.list2str(points['pos'])
                 self.parameters['pos'].value = bytes(pos, encoding='utf8')
@@ -164,8 +164,8 @@ class GUI():
     def getNewParameters(self):
         if not len(self.filenameList.curselection()) > 0:
             return None
-        # if not len(self.carNumberList.curselection()) > 0:
-        #     self.BTN_carNumPlus()
+        # if not len(self.objNumberList.curselection()) > 0:
+        #     self.BTN_objNumPlus()
         _pos = str(self.parameters['pos'].value, encoding='utf-8')
         _pos = ct.str2list(_pos)
 
@@ -198,7 +198,7 @@ class GUI():
     def updateLog(self):
         _fileNum = self.filenameList.curselection()[0]
         _filename = self.filenames[_fileNum]
-        _carNum = self.carNumberList.curselection()[0]
+        _objNum = self.objNumberList.curselection()[0]
         _info = {
             'pos':      self.pos,
             'areaSize': self.areaSize,
@@ -207,7 +207,7 @@ class GUI():
         if not self.log.__contains__(str(_fileNum)):
             self.log[str(_fileNum)] = {'filename': _filename}
 
-        self.log[str(_fileNum)][str(_carNum)] = _info
+        self.log[str(_fileNum)][str(_objNum)] = _info
         self.log2file()
 
     def log2file(self):
@@ -231,7 +231,7 @@ class GUI():
     def save2csv(self):
         ImageFilePath = self.filepath.get()
         logFilePath = os.path.join('output_%d.csv'%int(time.time()))
-        totalCars = self.carNumberList.size()
+        totalObjs = self.objNumberList.size()
         totalFiles = self.filenameList.size()
         totalPixel = Config.DISPLAY_HEIGHT * Config.DISPLAY_WIDTH
 
@@ -239,8 +239,8 @@ class GUI():
 
         # write header
         header = 'filepath,filename,fileNumber,totalSize'
-        for carNum in range(totalCars):
-            header = header + ',Car%d Size,Car%d Per.'%(carNum, carNum)
+        for objNum in range(totalObjs):
+            header = header + ',OBJ.%d Size,OBJ.%d Per.'%(objNum, objNum)
         header = header +'\n'
 
         datas = []
@@ -249,16 +249,16 @@ class GUI():
             filename = self.filenames[fileNum]
             _data = '%s,%s,%d,%d'%(ImageFilePath,filename,fileNum,totalPixel)
             if self.log.__contains__(str(fileNum)):
-                for carNum in range(totalCars):
-                    if self.log[str(fileNum)].__contains__(str(carNum)):
-                        areaSize = self.log[str(fileNum)][str(carNum)]['areaSize']
+                for objNum in range(totalObjs):
+                    if self.log[str(fileNum)].__contains__(str(objNum)):
+                        areaSize = self.log[str(fileNum)][str(objNum)]['areaSize']
                         _data = _data + ',%d,%f'%(int(areaSize), float(areaSize/totalPixel))
                     else:
-                        # fileNum havent this carNum
+                        # fileNum havent this objNum
                         _data = _data + ',0,0'
             else:
-                # fileNum havent any car
-                _data = _data + ',0,0'*totalCars
+                # fileNum havent any obj
+                _data = _data + ',0,0'*totalObjs
 
             datas.append(_data+'\n')
 
@@ -271,9 +271,9 @@ class GUI():
         self.areaSize = 0.0
 
         for n in range(10):
-            self.carNumberList.insert(tk.END,'Car No.%d'%n)
-        self.carNumberList.selection_clear(0,tk.END)
-        self.carNumberList.selection_set(0)
+            self.objNumberList.insert(tk.END,'No.%d'%n)
+        self.objNumberList.selection_clear(0,tk.END)
+        self.objNumberList.selection_set(0)
 
     ############################################################
     ##                     Buttom command                     ##
@@ -306,29 +306,29 @@ class GUI():
     def filenameOnSelected(self, event):
         self.setDisplayImage()
 
-    # # [button] add car number
-    # def BTN_carNumPlus(self):
-    #     self.carNumberList.insert(tk.END,'Car No.%d'%self.carNumberList.size())
-    #     self.carNumberList.selection_clear(0,tk.END)
-    #     self.carNumberList.selection_set(tk.END)
-    #     self.setSelectedCar()
+    # # [button] add obj number
+    # def BTN_objNumPlus(self):
+    #     self.objNumberList.insert(tk.END,'Obj No.%d'%self.objNumberList.size())
+    #     self.objNumberList.selection_clear(0,tk.END)
+    #     self.objNumberList.selection_set(tk.END)
+    #     self.setSelectedObj()
 
-    # # [button] del car number
-    # def BTN_carNumminus(self):
-    #     if self.carNumberList.size() > 0:
-    #         selected = self.carNumberList.curselection()[0]
-    #         self.carNumberList.delete(selected)
-    #         if self.carNumberList.size() > 0:
+    # # [button] del obj number
+    # def BTN_objNumminus(self):
+    #     if self.objNumberList.size() > 0:
+    #         selected = self.objNumberList.curselection()[0]
+    #         self.objNumberList.delete(selected)
+    #         if self.objNumberList.size() > 0:
     #             selectedNew = selected - 1 if selected - 1 >= 0 else 0
-    #             self.carNumberList.selection_clear(0,tk.END)
-    #             self.carNumberList.selection_set(selectedNew)
-    #             self.setSelectedCar()
+    #             self.objNumberList.selection_clear(0,tk.END)
+    #             self.objNumberList.selection_set(selectedNew)
+    #             self.setSelectedObj()
     #         else:
-    #             self.BTN_carNumPlus()
+    #             self.BTN_objNumPlus()
 
-    # [list] select Car Number
-    def List_carNumberOnSelected(self, event):
-        self.setSelectedCar()
+    # [list] select Obj Number
+    def List_objNumberOnSelected(self, event):
+        self.setSelectedObj()
 
 
 if __name__ == '__main__':
