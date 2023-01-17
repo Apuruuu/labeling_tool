@@ -130,7 +130,7 @@ class GUI():
     def setSelectedObj(self):
         if self.objNumberList.curselection() != ():
             selected = self.objNumberList.curselection()[0]
-            self.objNameStr.set('Obj No.%d'%selected)
+            self.objNameStr.set('No.%d'%selected)
             self.setNewPos()
 
     # find pos info in log
