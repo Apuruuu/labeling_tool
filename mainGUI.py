@@ -153,7 +153,6 @@ class GUI():
                 pos = ct.list2str(points['pos'])
                 self.parameters['pos'].value = bytes(pos, encoding='utf8')
                 self.areaSize = float(points['areaSize'])
-                print(self.areaSize, pos)
             else:
                 self.parameters['pos'].value = bytes('', encoding='utf8')
                 self.areaSize = float(0.0)
@@ -170,9 +169,6 @@ class GUI():
         _pos = ct.str2list(_pos)
 
         if self.pos != _pos:
-            print(1)
-            print(_pos)
-            print(ct.getPolyArea(_pos))
             self.areaSize = ct.getPolyArea(_pos)
             self.pos = _pos
             self.updateLog()
