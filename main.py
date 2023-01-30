@@ -216,12 +216,16 @@ class CV(Config):
     # キーボードイベント
     def keyboardEvent(self, key):
         # create a new area [N]
-        if key == ord('n') :
+        if key == ord('n') or key == ord('N') :
             self.newArea.append([0,0])
             self.isMove = False # 点移動
             self.isCreate = True # 区域创建
             self.isSelect = False # 区域选择
             print("Creating Mode ON")
+
+        # delete areas
+        elif key == ord('c') or key == ord('C') :
+            self.parameters['pos'].value = bytes('', encoding='utf8')
 
         # esc键解除当前选择的区域
         elif key == Config.KEY_MAP['ESC'] :
